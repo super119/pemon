@@ -56,11 +56,45 @@ fn register_signals() -> Result<()> {
     Ok(())
 }
 
-fn collect() -> Result<PemonEntry> {
+fn collect_cpu_freqs() -> Result<Vec<CpuFreqEntry>> {
+    let mut result = Vec::new();
     let mut f = File::open(CPU_FREQ_FILE)?;
     let mut contents = String::new();
     f.read_to_string(&mut contents)?;
 
+    let mut id = 1;
+    for l in contents.lines() {
+        let line = l.trim().to_string();
+        if line.len() == 0 {
+            continue;
+        }
+
+        if line.starts_with("cpu MHz") {
+            if let Some(pos) = line.find(':') {
+                let sfreq = line[(pos + 1)..].trim().to_string();
+                if let Ok(freq) = sfreq.parse::<f64>() {
+                    let cfe = CpuFreqEntry {
+                        id: id,
+                        freq: freq,
+                    };
+                    result.push(cfe);
+                    id += 1;
+                } else {
+                    warn!("Illegal cpuinfo line is found: {}", line);
+                    bail!(ErrorKind::InvalidCpuFreqLine);
+                }
+            } else {
+                warn!("Illegal cpuinfo line is found: {}", line);
+                bail!(ErrorKind::InvalidCpuFreqLine);
+            }
+        }
+    }
+
+    Ok(result)
+}
+
+fn collect() -> Result<PemonEntry> {
+    let cpu_freqs = collect_cpu_freqs()?;
     let mut ret = PemonEntry {
         cpu_freqs: Vec::new(),
         cpu_temp: 0,

@@ -42,5 +42,8 @@ error_chain! {
     // the same as `quick_error!`, but the `from()` and `cause()`
     // syntax is not supported.
     errors {
+        InvalidCpuFreqLine {
+            display("No CPU frequency info is found in one of cpuinfo lines.")
+        }
     }
 }
