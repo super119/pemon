@@ -76,8 +76,48 @@ pub fn collect_cpu_info(cpu_stats: &mut Vec<CpuStat>) -> Result<Vec<CpuInfoEntry
         }
     }
 
+    let mut f = File::open(CPU_STAT_FILE)?;
+    let mut contents = String::new();
+    f.read_to_string(&mut contents)?;
     for i in 0..result.len() {
-        let new_stat = get_cpu_stat(i)?;
+        let name = format!("cpu{}", i);
+        let mut cs = CpuStat::new();
+        for ref l in contents.lines() {
+            let line = l.trim().to_string();
+            if line.len() == 0 {
+                continue;
+            }
+
+            if line.starts_with(name.as_str()) {
+                let v: Vec<&str> = line[5..].split(' ').collect();
+                let user = v[0].parse::<usize>().unwrap();
+                let nice = v[1].parse::<usize>().unwrap();
+                let system = v[2].parse::<usize>().unwrap();
+                let idle = v[3].parse::<usize>().unwrap();
+                let iowait = v[4].parse::<usize>().unwrap();
+                let irq = v[5].parse::<usize>().unwrap();
+                let softirq = v[6].parse::<usize>().unwrap();
+                let stealstolen = v[7].parse::<usize>().unwrap();
+                let guest = v[8].parse::<usize>().unwrap();
+                cs = CpuStat {
+                    user: user,
+                    nice: nice,
+                    system: system,
+                    idle: idle,
+                    iowait: iowait,
+                    irq: irq,
+                    softirq: softirq,
+                    stealstolen: stealstolen,
+                    guest: guest,
+                };
+                break;
+            }
+        }
+
+        if cs.user == 0 {
+            bail!(ErrorKind::CpuStatNotFound);
+        }
+        let new_stat = cs;
         let old_stat = &cpu_stats[i];
         let total = (new_stat.user + new_stat.nice + new_stat.system + new_stat.idle +
                     new_stat.iowait + new_stat.irq + new_stat.softirq + new_stat.stealstolen +
@@ -111,56 +151,53 @@ pub fn get_cpu_num() -> Result<usize> {
     Ok(count)
 }
 
-fn get_cpu_stat(id: usize) -> Result<CpuStat> {
-    let mut result = CpuStat::new();
+pub fn initial_cpu_stats(cpu_num: usize) -> Result<Vec<CpuStat>> {
+    let mut result: Vec<CpuStat> = Vec::new();
     let mut f = File::open(CPU_STAT_FILE)?;
     let mut contents = String::new();
     f.read_to_string(&mut contents)?;
-    let name = format!("cpu{}", id);
-    for l in contents.lines() {
-        let line = l.trim().to_string();
-        if line.len() == 0 {
-            continue;
-        }
 
-        if line.starts_with(name.as_str()) {
-            let v: Vec<&str> = line[5..].split(' ').collect();
-            let user = v[0].parse::<usize>().unwrap();
-            let nice = v[1].parse::<usize>().unwrap();
-            let system = v[2].parse::<usize>().unwrap();
-            let idle = v[3].parse::<usize>().unwrap();
-            let iowait = v[4].parse::<usize>().unwrap();
-            let irq = v[5].parse::<usize>().unwrap();
-            let softirq = v[6].parse::<usize>().unwrap();
-            let stealstolen = v[7].parse::<usize>().unwrap();
-            let guest = v[8].parse::<usize>().unwrap();
-
-            result = CpuStat {
-                user: user,
-                nice: nice,
-                system: system,
-                idle: idle,
-                iowait: iowait,
-                irq: irq,
-                softirq: softirq,
-                stealstolen: stealstolen,
-                guest: guest,
-            };
-            break;
-        }
-    }
-
-    if result.user == 0 {
-        bail!(ErrorKind::CpuStatNotFound);
-    }
-    Ok(result)
-}
-
-pub fn initial_cpu_stats(cpu_num: usize) -> Result<Vec<CpuStat>> {
-    let mut result: Vec<CpuStat> = Vec::new();
     for i in 0..cpu_num {
-        let e = get_cpu_stat(i)?;
-        result.push(e);
+        let name = format!("cpu{}", i);
+        let mut cs = CpuStat::new();
+        for ref l in contents.lines() {
+            let line = l.trim().to_string();
+            if line.len() == 0 {
+                continue;
+            }
+
+            if line.starts_with(name.as_str()) {
+                let v: Vec<&str> = line[5..].split(' ').collect();
+                let user = v[0].parse::<usize>().unwrap();
+                let nice = v[1].parse::<usize>().unwrap();
+                let system = v[2].parse::<usize>().unwrap();
+                let idle = v[3].parse::<usize>().unwrap();
+                let iowait = v[4].parse::<usize>().unwrap();
+                let irq = v[5].parse::<usize>().unwrap();
+                let softirq = v[6].parse::<usize>().unwrap();
+                let stealstolen = v[7].parse::<usize>().unwrap();
+                let guest = v[8].parse::<usize>().unwrap();
+
+                cs = CpuStat {
+                    user: user,
+                    nice: nice,
+                    system: system,
+                    idle: idle,
+                    iowait: iowait,
+                    irq: irq,
+                    softirq: softirq,
+                    stealstolen: stealstolen,
+                    guest: guest,
+                };
+                break;
+            }
+        }
+
+        if cs.user == 0 {
+            bail!(ErrorKind::CpuStatNotFound);
+        } else {
+            result.push(cs);
+        }
     }
     Ok(result)
 }
