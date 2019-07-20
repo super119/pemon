@@ -45,5 +45,8 @@ error_chain! {
         InvalidCpuFreqLine {
             display("No CPU frequency info is found in one of cpuinfo lines.")
         }
+        CpuStatNotFound {
+            display("Cpu stat is not found. Perhaps due to a wrong cpuid.")
+        }
     }
 }

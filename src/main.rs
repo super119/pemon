@@ -6,25 +6,18 @@ extern crate env_logger;
 extern crate clap;
 
 mod errors;
+mod cpu;
 
-use std::fs::File;
 use std::thread;
 use std::time::Duration;
-use std::io::prelude::*;
 use log::LevelFilter;
 use clap::App;
 use nix::sys::signal::*;
 use errors::*;
+use cpu::*;
 
 const DEFAULT_INTERVAL: u64 = 2;
-const CPU_FREQ_FILE:&'static str = "/proc/cpuinfo";
 static mut QUIT: bool = false;
-
-#[derive(PartialEq, Debug)]
-struct CpuFreqEntry {
-    id: u32,
-    freq: f64,
-}
 
 #[derive(PartialEq, Debug)]
 struct FanEntry {
@@ -34,7 +27,7 @@ struct FanEntry {
 
 #[derive(PartialEq, Debug)]
 struct PemonEntry {
-    cpu_freqs: Vec<CpuFreqEntry>,
+    cpu_freqs: Vec<CpuInfoEntry>,
     cpu_temp: u32,
     fans: Vec<FanEntry>,
     hdd_temp: u32,
@@ -56,45 +49,8 @@ fn register_signals() -> Result<()> {
     Ok(())
 }
 
-fn collect_cpu_freqs() -> Result<Vec<CpuFreqEntry>> {
-    let mut result = Vec::new();
-    let mut f = File::open(CPU_FREQ_FILE)?;
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)?;
-
-    let mut id = 1;
-    for l in contents.lines() {
-        let line = l.trim().to_string();
-        if line.len() == 0 {
-            continue;
-        }
-
-        if line.starts_with("cpu MHz") {
-            if let Some(pos) = line.find(':') {
-                let sfreq = line[(pos + 1)..].trim().to_string();
-                if let Ok(freq) = sfreq.parse::<f64>() {
-                    let cfe = CpuFreqEntry {
-                        id: id,
-                        freq: freq,
-                    };
-                    result.push(cfe);
-                    id += 1;
-                } else {
-                    warn!("Illegal cpuinfo line is found: {}", line);
-                    bail!(ErrorKind::InvalidCpuFreqLine);
-                }
-            } else {
-                warn!("Illegal cpuinfo line is found: {}", line);
-                bail!(ErrorKind::InvalidCpuFreqLine);
-            }
-        }
-    }
-
-    Ok(result)
-}
-
-fn collect() -> Result<PemonEntry> {
-    let cpu_freqs = collect_cpu_freqs()?;
+fn collect(cpu_stats: &mut Vec<CpuStat>) -> Result<PemonEntry> {
+    let cpu_info = collect_cpu_info(cpu_stats)?;
     let mut ret = PemonEntry {
         cpu_freqs: Vec::new(),
         cpu_temp: 0,
@@ -131,8 +87,27 @@ fn main() {
         },
     }
 
+    let cpu_num = match get_cpu_num() {
+        Ok(o) => o,
+        Err(e) => {
+            for t in e.iter() { error!("Get CPU number failed: {}", t); }
+            return;
+        },
+    };
+    info!("CPU number: {}", cpu_num);
+
+    info!("Initialize CPU stats...");
+    let mut cpu_stats = match initial_cpu_stats(cpu_num) {
+        Ok(o) => o,
+        Err(e) => {
+            for t in e.iter() { error!("Initial cpu stats failed: {}", t); }
+            return;
+        },
+    };
+    thread::sleep(Duration::from_secs(itv));
+
     loop {
-        let entry = match collect() {
+        let entry = match collect(&mut cpu_stats) {
             Ok(o) => o,
             Err(e) => {
                 for t in e.iter() { error!("Collect CPU frequency info failed: {}", t); }
