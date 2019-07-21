@@ -8,6 +8,7 @@ extern crate clap;
 mod errors;
 mod cpu;
 mod hdd;
+mod sensors;
 
 use std::thread;
 use std::env;

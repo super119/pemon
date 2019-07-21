@@ -54,5 +54,8 @@ error_chain! {
         GetNvmeHDDTempFailed {
             display("Get nvme HDD temperature failed.")
         }
+        GetCpuTempFailed {
+            display("Get CPU temperature failed.")
+        }
     }
 }
