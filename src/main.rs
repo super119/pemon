@@ -10,6 +10,7 @@ mod cpu;
 mod hdd;
 
 use std::thread;
+use std::env;
 use std::time::Duration;
 use log::LevelFilter;
 use clap::App;
@@ -78,6 +79,13 @@ fn main() {
         if let Ok(us) = s.parse::<u64>() {
             itv = us;
         }
+    }
+
+    let user = env::var("USER").unwrap();
+    debug!("user is: {}", user);
+    if user != "root" {
+        error!("Permission denied: in order to get some HW info(like HDD temperature), you must run this program as root.");
+        return;
     }
 
     info!("Pemon starts running...");
