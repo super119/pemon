@@ -19,16 +19,16 @@ use nix::sys::signal::*;
 use errors::*;
 use cpu::*;
 use hdd::*;
+use sensors::*;
 
-const DEFAULT_INTERVAL: u64 = 2;
+const DEFAULT_INTERVAL: u64 = 3;
 static mut QUIT: bool = false;
-
 
 #[derive(PartialEq, Debug)]
 struct PemonEntry {
-    cpu_freqs: Vec<CpuInfoEntry>,
-    cpu_temp: u32,
-    hdd_temp: u32,
+    cpu_info: Vec<CpuInfoEntry>,
+    sensor: Sensor,
+    hdd_temp: usize,
 }
 
 extern "C" fn terminate(_: nix::libc::c_int)
@@ -49,12 +49,13 @@ fn register_signals() -> Result<()> {
 
 fn collect(cpu_stats: &mut Vec<CpuStat>) -> Result<PemonEntry> {
     let cpu_info = collect_cpu_info(cpu_stats)?;
-    let mut ret = PemonEntry {
-        cpu_freqs: Vec::new(),
-        cpu_temp: 0,
-        hdd_temp: 0,
-    };
-    Ok(ret)
+    let sensor = get_sensor_info()?;
+    let hdd_temp = get_nvme_hdd_temp()?;
+    Ok(PemonEntry {
+        cpu_info: cpu_info,
+        sensor: sensor,
+        hdd_temp: hdd_temp,
+    })
 }
 
 fn main() {
@@ -66,7 +67,7 @@ fn main() {
                         .version("0.1.0")
                         .author("Mark Zhang <ace119@163.com>")
                         .about("A simple utility to collect frequencies and temperatures.")
-                        .args_from_usage("-i, --interval=[seconds] 'Seconds delayed before next collection, default: 2 seconds'")
+                        .args_from_usage("-i, --interval=[seconds] 'Seconds delayed before next collection, default: 3 seconds'")
                         .get_matches();
 
     if let Some(s) = matches.value_of("interval") {
@@ -110,14 +111,16 @@ fn main() {
     };
     thread::sleep(Duration::from_secs(itv));
 
+    let mut pemon = Vec::new();
     loop {
         let entry = match collect(&mut cpu_stats) {
             Ok(o) => o,
             Err(e) => {
-                for t in e.iter() { error!("Collect CPU frequency info failed: {}", t); }
+                for t in e.iter() { error!("Collect performance info failed: {}", t); }
                 break;
             },
         };
+        pemon.push(entry);
 
         unsafe {
             if QUIT {

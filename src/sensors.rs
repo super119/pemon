@@ -14,7 +14,7 @@ pub struct Sensor {
 }
 
 fn get_temperature(line: &String) -> Result<usize> {
-    let mut result = 0;
+    let result;
     if let Some(pos) = line.find(':') {
         let temp_str = line[(pos + 1)..].trim();
         if let Some(pos) = temp_str.find('.') {
@@ -33,7 +33,7 @@ fn get_temperature(line: &String) -> Result<usize> {
 }
 
 fn get_rpm(line: &String) -> Result<usize> {
-    let mut result = 0;
+    let result;
     if let Some(pos) = line.find(':') {
         let temp_str = line[(pos + 1)..].trim();
         if let Some(pos) = temp_str.find(' ') {
