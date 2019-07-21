@@ -23,17 +23,11 @@ use hdd::*;
 const DEFAULT_INTERVAL: u64 = 2;
 static mut QUIT: bool = false;
 
-#[derive(PartialEq, Debug)]
-struct FanEntry {
-    id: u32,
-    rpm: u32,
-}
 
 #[derive(PartialEq, Debug)]
 struct PemonEntry {
     cpu_freqs: Vec<CpuInfoEntry>,
     cpu_temp: u32,
-    fans: Vec<FanEntry>,
     hdd_temp: u32,
 }
 
@@ -58,7 +52,6 @@ fn collect(cpu_stats: &mut Vec<CpuStat>) -> Result<PemonEntry> {
     let mut ret = PemonEntry {
         cpu_freqs: Vec::new(),
         cpu_temp: 0,
-        fans: Vec::new(),
         hdd_temp: 0,
     };
     Ok(ret)

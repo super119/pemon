@@ -39,6 +39,7 @@ error_chain! {
     foreign_links {
         Io(::std::io::Error);
         Popen(subprocess::PopenError);
+        ParseInt(::std::num::ParseIntError);
     }
 
     // Define additional `ErrorKind` variants. The syntax here is
@@ -54,8 +55,11 @@ error_chain! {
         GetNvmeHDDTempFailed {
             display("Get nvme HDD temperature failed.")
         }
-        GetCpuTempFailed {
-            display("Get CPU temperature failed.")
+        GetTempFailed {
+            display("Get sensor temperature info failed.")
+        }
+        GetRpmFailed {
+            display("Get sensor rpm info failed.")
         }
     }
 }
