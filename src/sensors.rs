@@ -21,7 +21,7 @@ pub fn get_cpu_temp() -> Result<usize> {
             continue;
         }
 
-        if line.starts_with("temp1") {
+        if line.starts_with("CPU Temperature") {
             if let Some(pos) = line.find(':') {
                 let temp_str = line[(pos + 1)..].trim();
                 if let Some(pos) = temp_str.find('.') {

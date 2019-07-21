@@ -51,10 +51,10 @@ pub fn get_nvme_hdd_temp() -> Result<usize> {
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn test_get_nvme_hdd_temp() {
-    //    let result = get_nvme_hdd_temp().unwrap();
-    //    assert_eq!(result > 0, true);
-    //    println!("Got HDD temperature: {}", result);
-    // }
+    #[test]
+    fn test_get_nvme_hdd_temp() {
+       let result = get_nvme_hdd_temp().unwrap();
+       assert_eq!(result > 0, true);
+       println!("Got HDD temperature: {}", result);
+    }
 }
