@@ -7,6 +7,7 @@ extern crate clap;
 
 mod errors;
 mod cpu;
+mod hdd;
 
 use std::thread;
 use std::time::Duration;
@@ -15,6 +16,7 @@ use clap::App;
 use nix::sys::signal::*;
 use errors::*;
 use cpu::*;
+use hdd::*;
 
 const DEFAULT_INTERVAL: u64 = 2;
 static mut QUIT: bool = false;
