@@ -58,6 +58,51 @@ fn collect(cpu_stats: &mut Vec<CpuStat>) -> Result<PemonEntry> {
     })
 }
 
+fn do_hdd_temp_statistic(pemon: &Vec<PemonEntry>) -> String {
+    let mut sum = 0;
+    let mut min = usize::max_value();
+    let mut max = 0;
+    let mut below_30 = 0;
+    let mut t_30_50 = 0;
+    let mut t_50_70 = 0;
+    let mut above_70 = 0;
+    let len = pemon.len();
+    for i in 0..len {
+        let temp = pemon[i].hdd_temp;
+        sum += temp;
+        if temp < min {
+            min = temp;
+        }
+        if temp > max {
+            max = temp;
+        }
+        if temp < 30 {
+            below_30 += 1;
+        }
+        if temp >= 30 && temp < 50 {
+            t_30_50 += 1;
+        }
+        if temp >=50 && temp < 70 {
+            t_50_70 += 1;
+        }
+        if temp >= 70 {
+            above_70 += 1;
+        }
+    }
+    let avg = sum as f64 / len as f64;
+    let ratio_below_30 = below_30 as f64 / len as f64 * 100.0;
+    let ratio_30_50 = t_30_50 as f64 / len as f64 * 100.0;
+    let ratio_50_70 = t_50_70 as f64 / len as f64 * 100.0;
+    let ratio_above_70 = above_70 as f64 / len as f64 * 100.0;
+    format!("HDD temperature:\tavg: {:.2} | min: {} | max: {} | <30°C: {:.2}% | 30°C-50°C: {:.2}% | 50°C-70°C: {:.2}% | >=70°C: {:.2}%",
+            avg, min, max, ratio_below_30, ratio_30_50, ratio_50_70, ratio_above_70)
+}
+
+fn do_statistic(pemon: Vec<PemonEntry>) {
+    println!();
+    println!("{}", do_hdd_temp_statistic(&pemon));
+}
+
 fn main() {
     env_logger::init();
     log::set_max_level(LevelFilter::Debug);
@@ -131,4 +176,7 @@ fn main() {
 
         thread::sleep(Duration::from_secs(itv));
     }
+
+    info!("Start doing the statistic...");
+    do_statistic(pemon);
 }
