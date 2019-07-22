@@ -1,5 +1,3 @@
-extern crate subprocess;
-
 error_chain! {
     // The type defined for this error. These are the conventional
     // and recommended names, but they can be arbitrarily chosen.
@@ -38,7 +36,6 @@ error_chain! {
     // This section can be empty.
     foreign_links {
         Io(::std::io::Error);
-        Popen(subprocess::PopenError);
         ParseInt(::std::num::ParseIntError);
     }
 

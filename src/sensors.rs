@@ -1,8 +1,7 @@
-extern crate subprocess;
-
+use std::process::Command;
+use std::os::unix::process::CommandExt;
 use crate::errors::*;
-use subprocess::Exec;
-use subprocess::Redirection;
+use nix::sys::signal::*;
 
 #[derive(PartialEq, Debug)]
 pub struct Sensor {
@@ -56,14 +55,24 @@ pub fn get_sensor_info() -> Result<Sensor> {
     let mut chipset = 0;
     let mut cpu_fan = 0;
     let mut cha_fan = 0;
-    let p = Exec::cmd("sensors")
-              .stdout(Redirection::Pipe)
-              .capture()?;
-    if !p.success() {
+    let output;
+    unsafe {
+        output = Command::new("sensors")
+                 // pre_exec is unsafe function
+                 .pre_exec(|| {
+                     let mut set = SigSet::empty();
+                     set.add(SIGINT);
+                     set.add(SIGTERM);
+                     sigprocmask(SigmaskHow::SIG_BLOCK, Some(&set), None).unwrap();
+                     Ok(())
+                 })
+                 .output()?;
+    }
+    if !output.status.success() {
         bail!("Running sensors failed. Sensor info is unavailable now.");
     }
 
-    let out = p.stdout_str();
+    let out = String::from_utf8_lossy(&output.stdout).into_owned();
     for l in out.lines() {
         let line = l.trim().to_string();
         if line.len() == 0 {

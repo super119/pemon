@@ -1,22 +1,30 @@
-extern crate subprocess;
-
+use std::process::Command;
+use std::os::unix::process::CommandExt;
 use crate::errors::*;
-use subprocess::Exec;
-use subprocess::Redirection;
+use nix::sys::signal::*;
 
 pub fn get_nvme_hdd_temp() -> Result<usize> {
     let mut result = 0;
     let mut found = false;
-    let p = Exec::cmd("nvme")
-              .arg("smart-log")
-              .arg("/dev/nvme0n1")
-              .stdout(Redirection::Pipe)
-              .capture()?;
-    if !p.success() {
+    let output;
+    unsafe {
+        output = Command::new("nvme")
+                 .arg("smart-log")
+                 .arg("/dev/nvme0n1")
+                 // pre_exec is unsafe function
+                 .pre_exec(|| {
+                     let mut set = SigSet::empty();
+                     set.add(SIGINT);
+                     set.add(SIGTERM);
+                     sigprocmask(SigmaskHow::SIG_BLOCK, Some(&set), None).unwrap();
+                     Ok(())
+                 })
+                 .output()?;
+    }
+    if !output.status.success() {
         bail!("Running nvme failed. HDD temp is unavailable.");
     }
-
-    let out = p.stdout_str();
+    let out = String::from_utf8_lossy(&output.stdout).into_owned();
     for l in out.lines() {
         let line = l.trim().to_string();
         if line.len() == 0 {
