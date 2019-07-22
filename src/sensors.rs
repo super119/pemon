@@ -5,11 +5,11 @@ use nix::sys::signal::*;
 
 #[derive(PartialEq, Debug)]
 pub struct Sensor {
-    cpu_temp: usize,
-    mb_temp: usize,
-    chipset_temp: usize,
-    cpu_fan_rpm: usize,
-    chassis_fan_rpm: usize,
+    pub cpu_temp: usize,
+    pub mb_temp: usize,
+    pub chipset_temp: usize,
+    pub cpu_fan_rpm: usize,
+    pub chassis_fan_rpm: usize,
 }
 
 fn get_temperature(line: &String) -> Result<usize> {

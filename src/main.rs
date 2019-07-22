@@ -59,6 +59,198 @@ fn collect(cpu_stats: &mut Vec<CpuStat>) -> Result<PemonEntry> {
     })
 }
 
+fn do_sensor_statistic(pemon: &Vec<PemonEntry>) -> String {
+    let mut sum = 0;
+    let mut min = usize::max_value();
+    let mut max = 0;
+    let mut l1 = 0;
+    let mut l2 = 0;
+    let mut l3 = 0;
+    let mut l4 = 0;
+    let mut l5 = 0;
+    let mut ret;
+    let len = pemon.len();
+    for i in 0..len {
+        let temp = pemon[i].sensor.cpu_temp;
+        sum += temp;
+        if temp < min {
+            min = temp;
+        }
+        if temp > max {
+            max = temp;
+        }
+        if temp < 40 {
+            l1 += 1;
+        }
+        if temp >= 40 && temp < 60 {
+            l2 += 1;
+        }
+        if temp >=60 && temp < 70 {
+            l3 += 1;
+        }
+        if temp >=70 && temp < 80 {
+            l4 += 1;
+        }
+        if temp >= 80 {
+            l5 += 1;
+        }
+    }
+    let avg = sum as f64 / len as f64;
+    let r1 = l1 as f64 / len as f64 * 100.0;
+    let r2 = l2 as f64 / len as f64 * 100.0;
+    let r3 = l3 as f64 / len as f64 * 100.0;
+    let r4 = l4 as f64 / len as f64 * 100.0;
+    let r5 = l5 as f64 / len as f64 * 100.0;
+    ret = format!("CPU temperature:\tavg: {:.2} | min: {} | max: {} | <40°C: {:.2}% | 40°C-60°C: {:.2}% | 60°C-70°C: {:.2}% | 70°C-80°C: {:.2}% | >=80°C: {:.2}%",
+            avg, min, max, r1, r2, r3, r4, r5);
+
+    sum = 0; min = usize::max_value(); max = 0; l1 = 0; l2 = 0; l3 = 0; l4 = 0; l5 = 0;
+    for i in 0..len {
+        let temp = pemon[i].sensor.mb_temp;
+        sum += temp;
+        if temp < min {
+            min = temp;
+        }
+        if temp > max {
+            max = temp;
+        }
+        if temp < 40 {
+            l1 += 1;
+        }
+        if temp >= 40 && temp < 60 {
+            l2 += 1;
+        }
+        if temp >=60 && temp < 70 {
+            l3 += 1;
+        }
+        if temp >=70 && temp < 80 {
+            l4 += 1;
+        }
+        if temp >= 80 {
+            l5 += 1;
+        }
+    }
+    let avg = sum as f64 / len as f64;
+    let r1 = l1 as f64 / len as f64 * 100.0;
+    let r2 = l2 as f64 / len as f64 * 100.0;
+    let r3 = l3 as f64 / len as f64 * 100.0;
+    let r4 = l4 as f64 / len as f64 * 100.0;
+    let r5 = l5 as f64 / len as f64 * 100.0;
+    ret = format!("{}\n{}", ret,
+          format!("MB temperature:\t\tavg: {:.2} | min: {} | max: {} | <40°C: {:.2}% | 40°C-60°C: {:.2}% | 60°C-70°C: {:.2}% | 70°C-80°C: {:.2}% | >=80°C: {:.2}%",
+          avg, min, max, r1, r2, r3, r4, r5));
+
+    sum = 0; min = usize::max_value(); max = 0; l1 = 0; l2 = 0; l3 = 0; l4 = 0; l5 = 0;
+    for i in 0..len {
+        let temp = pemon[i].sensor.chipset_temp;
+        sum += temp;
+        if temp < min {
+            min = temp;
+        }
+        if temp > max {
+            max = temp;
+        }
+        if temp < 40 {
+            l1 += 1;
+        }
+        if temp >= 40 && temp < 60 {
+            l2 += 1;
+        }
+        if temp >=60 && temp < 70 {
+            l3 += 1;
+        }
+        if temp >=70 && temp < 80 {
+            l4 += 1;
+        }
+        if temp >= 80 {
+            l5 += 1;
+        }
+    }
+    let avg = sum as f64 / len as f64;
+    let r1 = l1 as f64 / len as f64 * 100.0;
+    let r2 = l2 as f64 / len as f64 * 100.0;
+    let r3 = l3 as f64 / len as f64 * 100.0;
+    let r4 = l4 as f64 / len as f64 * 100.0;
+    let r5 = l5 as f64 / len as f64 * 100.0;
+    ret = format!("{}\n{}", ret,
+          format!("Chipset temperature:\tavg: {:.2} | min: {} | max: {} | <40°C: {:.2}% | 40°C-60°C: {:.2}% | 60°C-70°C: {:.2}% | 70°C-80°C: {:.2}% | >=80°C: {:.2}%",
+          avg, min, max, r1, r2, r3, r4, r5));
+
+    sum = 0; min = usize::max_value(); max = 0; l1 = 0; l2 = 0; l3 = 0; l4 = 0; l5 = 0;
+    for i in 0..len {
+        let temp = pemon[i].sensor.cpu_fan_rpm;
+        sum += temp;
+        if temp < min {
+            min = temp;
+        }
+        if temp > max {
+            max = temp;
+        }
+        if temp < 1500 {
+            l1 += 1;
+        }
+        if temp >= 1500 && temp < 2000 {
+            l2 += 1;
+        }
+        if temp >= 2000 && temp < 2500 {
+            l3 += 1;
+        }
+        if temp >= 2500 && temp < 3000 {
+            l4 += 1;
+        }
+        if temp >= 3000 {
+            l5 += 1;
+        }
+    }
+    let avg = sum as f64 / len as f64;
+    let r1 = l1 as f64 / len as f64 * 100.0;
+    let r2 = l2 as f64 / len as f64 * 100.0;
+    let r3 = l3 as f64 / len as f64 * 100.0;
+    let r4 = l4 as f64 / len as f64 * 100.0;
+    let r5 = l5 as f64 / len as f64 * 100.0;
+    ret = format!("{}\n{}", ret,
+          format!("CPU Fan RPM:\t\tavg: {:.2} | min: {} | max: {} | <1500: {:.2}% | 1500-2000: {:.2}% | 2000-2500: {:.2}% | 2500-3000: {:.2}% | >=3000: {:.2}%",
+          avg, min, max, r1, r2, r3, r4, r5));
+
+    sum = 0; min = usize::max_value(); max = 0; l1 = 0; l2 = 0; l3 = 0; l4 = 0; l5 = 0;
+    for i in 0..len {
+        let temp = pemon[i].sensor.chassis_fan_rpm;
+        sum += temp;
+        if temp < min {
+            min = temp;
+        }
+        if temp > max {
+            max = temp;
+        }
+        if temp < 1500 {
+            l1 += 1;
+        }
+        if temp >= 1500 && temp < 1800 {
+            l2 += 1;
+        }
+        if temp >= 1800 && temp < 2100 {
+            l3 += 1;
+        }
+        if temp >= 2100 && temp < 2500 {
+            l4 += 1;
+        }
+        if temp >= 2500 {
+            l5 += 1;
+        }
+    }
+    let avg = sum as f64 / len as f64;
+    let r1 = l1 as f64 / len as f64 * 100.0;
+    let r2 = l2 as f64 / len as f64 * 100.0;
+    let r3 = l3 as f64 / len as f64 * 100.0;
+    let r4 = l4 as f64 / len as f64 * 100.0;
+    let r5 = l5 as f64 / len as f64 * 100.0;
+    ret = format!("{}\n{}", ret,
+          format!("Chassis Fan RPM:\tavg: {:.2} | min: {} | max: {} | <1500: {:.2}% | 1500-1800: {:.2}% | 1800-2100: {:.2}% | 2100-2500: {:.2}% | >=2500: {:.2}%",
+          avg, min, max, r1, r2, r3, r4, r5));
+
+    ret
+}
+
 fn do_hdd_temp_statistic(pemon: &Vec<PemonEntry>) -> String {
     let mut sum = 0;
     let mut min = usize::max_value();
@@ -101,6 +293,7 @@ fn do_hdd_temp_statistic(pemon: &Vec<PemonEntry>) -> String {
 
 fn do_statistic(pemon: Vec<PemonEntry>) {
     println!();
+    println!("{}", do_sensor_statistic(&pemon));
     println!("{}", do_hdd_temp_statistic(&pemon));
 }
 
