@@ -12,7 +12,7 @@ pub struct CpuStat {
 }
 
 impl CpuStat {
-    pub fn new() -> CpuStat {
+    fn new() -> CpuStat {
         CpuStat {
             total: 0,
             idle: 0,
@@ -22,9 +22,9 @@ impl CpuStat {
 
 #[derive(PartialEq, Debug)]
 pub struct CpuInfoEntry {
-    id: usize,
-    freq: f64,
-    usage: f64,
+    pub id: usize,
+    pub freq: f64,
+    pub usage: f64,
 }
 
 pub fn collect_cpu_info(cpu_stats: &mut Vec<CpuStat>) -> Result<Vec<CpuInfoEntry>> {

@@ -59,6 +59,82 @@ fn collect(cpu_stats: &mut Vec<CpuStat>) -> Result<PemonEntry> {
     })
 }
 
+fn do_cpu_statistic(pemon: &Vec<PemonEntry>) -> String {
+    let mut sum = Vec::new();
+    let mut min = Vec::new();
+    let mut max = Vec::new();
+    let mut l1 = Vec::new();
+    let mut l2 = Vec::new();
+    let mut l3 = Vec::new();
+    let mut l4 = Vec::new();
+    let mut l5 = Vec::new();
+    let mut ret = String::new();
+    let len = pemon.len();
+    let count = pemon[0].cpu_info.len();
+    for _ in 0..count {
+        sum.push(0.0);
+        min.push(std::f64::MAX);
+        max.push(0.0);
+        l1.push(0);
+        l2.push(0);
+        l3.push(0);
+        l4.push(0);
+        l5.push(0);
+    }
+
+    for i in 0..len {
+        let vinfo = &pemon[i].cpu_info;
+        for j in 0..vinfo.len() {
+            let freq = vinfo[j].freq;
+            sum[j] += freq;
+            if freq < min[j] {
+                min[j] = freq;
+            }
+            if freq > max[j] {
+                max[j] = freq;
+            }
+            if freq < 3600.0 {
+               l1[j] += 1;
+            }
+            if freq >= 3600.0 && freq < 4000.0{
+               l2[j] += 1;
+            }
+            if freq >= 4000.0 && freq < 4100.0{
+               l3[j] += 1;
+            }
+            if freq >= 4100.0 && freq < 4250.0{
+               l4[j] += 1;
+            }
+            if freq >= 4250.0 {
+               l5[j] += 1;
+            }
+        }
+    }
+    for i in 0..count {
+        let avg = sum[i] / len as f64;
+        let r1 = l1[i] as f64 / len as f64 * 100.0;
+        let r2 = l2[i] as f64 / len as f64 * 100.0;
+        let r3 = l3[i] as f64 / len as f64 * 100.0;
+        let r4 = l4[i] as f64 / len as f64 * 100.0;
+        let r5 = l5[i] as f64 / len as f64 * 100.0;
+        let seq;
+        if i < 10 {
+            seq = format!("0{}", i);
+        } else {
+            seq = format!("{}", i);
+        }
+        if ret.len() == 0 {
+            ret = format!("CPU{} frequency:\tavg: {:.2} | min: {:.2} | max: {:.2} | <3.6GHz: {:.2}% | 3.6-4.0GHz: {:.2}% | 4.0-4.1GHz: {:.2}% | 4.1-4.25GHz: {:.2}% | >=4.25GHz: {:.2}%",
+                    seq, avg, min[i], max[i], r1, r2, r3, r4, r5);
+        } else {
+            ret = format!("{}\n{}", ret, format!("CPU{} frequency:\tavg: {:.2} | min: {:.2} | max: {:.2} | <3.6GHz: {:.2}% | 3.6-4.0GHz: {:.2}% | 4.0-4.1GHz: {:.2}% | 4.1-4.25GHz: {:.2}% | >=4.25GHz: {:.2}%",
+                                         seq, avg, min[i], max[i], r1, r2, r3, r4, r5));
+        }
+    }
+
+    ret
+}
+
 fn do_sensor_statistic(pemon: &Vec<PemonEntry>) -> String {
     let mut sum = 0;
     let mut min = usize::max_value();
@@ -293,6 +369,7 @@ fn do_hdd_temp_statistic(pemon: &Vec<PemonEntry>) -> String {
 
 fn do_statistic(pemon: Vec<PemonEntry>) {
     println!();
+    println!("{}", do_cpu_statistic(&pemon));
     println!("{}", do_sensor_statistic(&pemon));
     println!("{}", do_hdd_temp_statistic(&pemon));
 }
