@@ -132,6 +132,61 @@ fn do_cpu_statistic(pemon: &Vec<PemonEntry>) -> String {
         }
     }
 
+    sum.clear(); min.clear(); max.clear(); l1.clear(); l2.clear(); l3.clear(); l4.clear(); l5.clear();
+    for _ in 0..count {
+        sum.push(0.0);
+        min.push(std::f64::MAX);
+        max.push(0.0);
+        l1.push(0);
+        l2.push(0);
+        l3.push(0);
+        l4.push(0);
+        l5.push(0);
+    }
+    for i in 0..len {
+        let vinfo = &pemon[i].cpu_info;
+        for j in 0..vinfo.len() {
+            let usage = vinfo[j].usage;
+            sum[j] += usage;
+            if usage < min[j] {
+                min[j] = usage;
+            }
+            if usage > max[j] {
+                max[j] = usage;
+            }
+            if usage < 10.0 {
+               l1[j] += 1;
+            }
+            if usage >= 10.0 && usage < 50.0{
+               l2[j] += 1;
+            }
+            if usage >= 50.0 && usage < 70.0{
+               l3[j] += 1;
+            }
+            if usage >= 70.0 && usage < 90.0{
+               l4[j] += 1;
+            }
+            if usage >= 90.0 {
+               l5[j] += 1;
+            }
+        }
+    }
+    for i in 0..count {
+        let avg = sum[i] / len as f64;
+        let r1 = l1[i] as f64 / len as f64 * 100.0;
+        let r2 = l2[i] as f64 / len as f64 * 100.0;
+        let r3 = l3[i] as f64 / len as f64 * 100.0;
+        let r4 = l4[i] as f64 / len as f64 * 100.0;
+        let r5 = l5[i] as f64 / len as f64 * 100.0;
+        let seq;
+        if i < 10 {
+            seq = format!("0{}", i);
+        } else {
+            seq = format!("{}", i);
+        }
+        ret = format!("{}\n{}", ret, format!("CPU{} usage:\t\tavg: {:.2} | min: {:.2} | max: {:.2} | <10%: {:.2}% | 10%-50%: {:.2}% | 50%-70%: {:.2}% | 70%-90%: {:.2}% | >=90%: {:.2}%",
+                                     seq, avg, min[i], max[i], r1, r2, r3, r4, r5));
+    }
     ret
 }
 
