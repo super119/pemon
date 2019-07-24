@@ -82,7 +82,7 @@ HDD temperature:        avg: 28.85 | min: 16 | max: 38 | <30°C: 38.98% | 30°C-
 
 -----------------------------
 
-1 rear fan + 2 fans on top + force all cores to 4.25GHz:
+1 rear fan + 2 fans on top + force all cores to 4.25GHz(cpu voltage: 1.35v fails so increased to 1.38v which works):
 CPU00 frequency:        avg: 4249.30 | min: 4239.89 | max: 4386.38 | <3.6GHz: 0.00% | 3.6-4.0GHz: 0.00% | 4.0-4.1GHz: 0.00% | 4.1-4.25GHz: 89.83% | >=4.25GHz: 10.17%
 CPU01 frequency:        avg: 4245.45 | min: 4241.55 | max: 4296.92 | <3.6GHz: 0.00% | 3.6-4.0GHz: 0.00% | 4.0-4.1GHz: 0.00% | 4.1-4.25GHz: 88.14% | >=4.25GHz: 11.86%
 CPU02 frequency:        avg: 4244.67 | min: 4227.89 | max: 4305.79 | <3.6GHz: 0.00% | 3.6-4.0GHz: 0.00% | 4.0-4.1GHz: 0.00% | 4.1-4.25GHz: 93.22% | >=4.25GHz: 6.78%
